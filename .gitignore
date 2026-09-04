@@ -1,0 +1,10 @@
+# Databricks Genie Space files are not supported in Git folders
+*.geniespace.json
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Databricks artifacts
+.ipynb_checkpoints/
