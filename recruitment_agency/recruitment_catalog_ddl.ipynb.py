@@ -19,6 +19,29 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,catalog & schema
+# MAGIC %sql
+# MAGIC -- Create catalog
+# MAGIC CREATE CATALOG IF NOT EXISTS recruitment;
+# MAGIC
+# MAGIC -- Create schemas
+# MAGIC CREATE SCHEMA IF NOT EXISTS recruitment.bronze
+# MAGIC   COMMENT 'Bronze layer: raw ingested data';
+# MAGIC
+# MAGIC CREATE SCHEMA IF NOT EXISTS recruitment.silver
+# MAGIC   COMMENT 'Silver layer: cleaned and validated data';
+# MAGIC
+# MAGIC CREATE SCHEMA IF NOT EXISTS recruitment.gold
+# MAGIC   COMMENT 'Gold layer: business-level aggregated data';
+
+# COMMAND ----------
+
+# DBTITLE 1,volumn
+# MAGIC %sql
+# MAGIC CREATE VOLUME IF NOT EXISTS recruitment.bronze.uploads;
+
+# COMMAND ----------
+
 # DBTITLE 1,Bronze DDL Output
 # Fetch and display all Bronze schema DDL statements
 catalog = "recruitment"
@@ -42,14 +65,14 @@ for table in sorted(bronze_tables):
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC BRONZE SCHEMA - CREATE TABLE STATEMENTS
-# MAGIC ================================================================================
-# MAGIC Total tables: 12
+# MAGIC -- BRONZE SCHEMA - CREATE TABLE STATEMENTS
+# MAGIC -- ================================================================================
+# MAGIC -- Total tables: 12
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- BRONZE_AGREEMENTS
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- BRONZE_AGREEMENTS
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.bronze.bronze_agreements (
 # MAGIC   agreement_id STRING COLLATE UTF8_BINARY,
@@ -92,9 +115,9 @@ for table in sorted(bronze_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- BRONZE_CANDIDATES
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- BRONZE_CANDIDATES
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.bronze.bronze_candidates (
 # MAGIC   candidate_id STRING COLLATE UTF8_BINARY,
@@ -149,9 +172,9 @@ for table in sorted(bronze_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- BRONZE_COMPANIES
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- BRONZE_COMPANIES
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.bronze.bronze_companies (
 # MAGIC   company_id STRING COLLATE UTF8_BINARY,
@@ -194,9 +217,9 @@ for table in sorted(bronze_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- BRONZE_CONTACTS
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- BRONZE_CONTACTS
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.bronze.bronze_contacts (
 # MAGIC   contact_id STRING COLLATE UTF8_BINARY,
@@ -236,9 +259,9 @@ for table in sorted(bronze_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- BRONZE_INTERVIEWS
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- BRONZE_INTERVIEWS
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.bronze.bronze_interviews (
 # MAGIC   interview_id STRING COLLATE UTF8_BINARY,
@@ -283,9 +306,9 @@ for table in sorted(bronze_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- BRONZE_INVOICES
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- BRONZE_INVOICES
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.bronze.bronze_invoices (
 # MAGIC   invoice_id STRING COLLATE UTF8_BINARY,
@@ -328,9 +351,9 @@ for table in sorted(bronze_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- BRONZE_JOBS
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- BRONZE_JOBS
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.bronze.bronze_jobs (
 # MAGIC   job_id STRING COLLATE UTF8_BINARY,
@@ -382,9 +405,9 @@ for table in sorted(bronze_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- BRONZE_OFFERS
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- BRONZE_OFFERS
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.bronze.bronze_offers (
 # MAGIC   offer_id STRING COLLATE UTF8_BINARY,
@@ -425,9 +448,9 @@ for table in sorted(bronze_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- BRONZE_PAYMENTS
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- BRONZE_PAYMENTS
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.bronze.bronze_payments (
 # MAGIC   payment_id STRING COLLATE UTF8_BINARY,
@@ -467,9 +490,9 @@ for table in sorted(bronze_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- BRONZE_PLACEMENTS
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- BRONZE_PLACEMENTS
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.bronze.bronze_placements (
 # MAGIC   placement_id STRING COLLATE UTF8_BINARY,
@@ -511,9 +534,9 @@ for table in sorted(bronze_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- BRONZE_QUARANTINE
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- BRONZE_QUARANTINE
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.bronze.bronze_quarantine (
 # MAGIC   quarantine_id STRING COLLATE UTF8_BINARY NOT NULL COMMENT 'Unique quarantine record ID',
@@ -545,9 +568,9 @@ for table in sorted(bronze_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- BRONZE_SUBMISSIONS
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- BRONZE_SUBMISSIONS
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.bronze.bronze_submissions (
 # MAGIC   submission_id STRING COLLATE UTF8_BINARY,
@@ -621,14 +644,14 @@ for table in sorted(silver_tables):
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SILVER SCHEMA - CREATE TABLE STATEMENTS
-# MAGIC ================================================================================
-# MAGIC Total tables: 15
+# MAGIC -- SILVER SCHEMA - CREATE TABLE STATEMENTS
+# MAGIC -- ================================================================================
+# MAGIC -- Total tables: 15
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- AUDIT_DATA_CHANGES
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- AUDIT_DATA_CHANGES
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.silver.audit_data_changes (
 # MAGIC   audit_id STRING COLLATE UTF8_BINARY NOT NULL COMMENT 'Unique audit entry ID (UUID)',
@@ -659,9 +682,9 @@ for table in sorted(silver_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- CONFIG_BUSINESS_RULES
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- CONFIG_BUSINESS_RULES
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.silver.config_business_rules (
 # MAGIC   rule_name STRING COLLATE UTF8_BINARY NOT NULL COMMENT 'Name of the configurable rule',
@@ -691,9 +714,9 @@ for table in sorted(silver_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- CONTROL_FILE_INGESTION
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- CONTROL_FILE_INGESTION
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.silver.control_file_ingestion (
 # MAGIC   ingestion_id STRING COLLATE UTF8_BINARY NOT NULL COMMENT 'Unique identifier for each ingestion event (UUID)',
@@ -730,9 +753,9 @@ for table in sorted(silver_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- CONTROL_JOB_RUN
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- CONTROL_JOB_RUN
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.silver.control_job_run (
 # MAGIC   run_id STRING COLLATE UTF8_BINARY NOT NULL COMMENT 'Unique run identifier (UUID)',
@@ -762,9 +785,9 @@ for table in sorted(silver_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- DIM_AGREEMENT
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- DIM_AGREEMENT
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.silver.dim_agreement (
 # MAGIC   agreement_id STRING COLLATE UTF8_BINARY NOT NULL COMMENT 'Unique agreement identifier',
@@ -801,9 +824,9 @@ for table in sorted(silver_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- DIM_CANDIDATE
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- DIM_CANDIDATE
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.silver.dim_candidate (
 # MAGIC   candidate_id STRING COLLATE UTF8_BINARY NOT NULL COMMENT 'Unique candidate identifier',
@@ -852,9 +875,9 @@ for table in sorted(silver_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- DIM_COMPANY
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- DIM_COMPANY
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.silver.dim_company (
 # MAGIC   company_id STRING COLLATE UTF8_BINARY NOT NULL COMMENT 'Stable unique company identifier',
@@ -891,9 +914,9 @@ for table in sorted(silver_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- DIM_CONTACT
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- DIM_CONTACT
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.silver.dim_contact (
 # MAGIC   contact_id STRING COLLATE UTF8_BINARY NOT NULL COMMENT 'Unique contact identifier',
@@ -927,9 +950,9 @@ for table in sorted(silver_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- DIM_JOB
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- DIM_JOB
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.silver.dim_job (
 # MAGIC   job_id STRING COLLATE UTF8_BINARY NOT NULL COMMENT 'Unique job identifier',
@@ -975,9 +998,9 @@ for table in sorted(silver_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- FACT_INTERVIEW
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- FACT_INTERVIEW
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.silver.fact_interview (
 # MAGIC   interview_id STRING COLLATE UTF8_BINARY NOT NULL COMMENT 'Unique interview identifier',
@@ -1016,9 +1039,9 @@ for table in sorted(silver_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- FACT_INVOICE
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- FACT_INVOICE
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.silver.fact_invoice (
 # MAGIC   invoice_id STRING COLLATE UTF8_BINARY NOT NULL COMMENT 'Unique invoice identifier',
@@ -1055,9 +1078,9 @@ for table in sorted(silver_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- FACT_OFFER
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- FACT_OFFER
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.silver.fact_offer (
 # MAGIC   offer_id STRING COLLATE UTF8_BINARY NOT NULL COMMENT 'Unique offer identifier',
@@ -1092,9 +1115,9 @@ for table in sorted(silver_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- FACT_PAYMENT
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- FACT_PAYMENT
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.silver.fact_payment (
 # MAGIC   payment_id STRING COLLATE UTF8_BINARY NOT NULL COMMENT 'Unique payment identifier',
@@ -1128,9 +1151,9 @@ for table in sorted(silver_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- FACT_PLACEMENT
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- FACT_PLACEMENT
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.silver.fact_placement (
 # MAGIC   placement_id STRING COLLATE UTF8_BINARY NOT NULL COMMENT 'Unique placement identifier',
@@ -1166,9 +1189,9 @@ for table in sorted(silver_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- FACT_SUBMISSION
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- FACT_SUBMISSION
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.silver.fact_submission (
 # MAGIC   submission_id STRING COLLATE UTF8_BINARY NOT NULL COMMENT 'Unique submission identifier',
@@ -1236,14 +1259,14 @@ for table in sorted(gold_tables):
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC GOLD SCHEMA - CREATE TABLE/VIEW STATEMENTS
-# MAGIC ================================================================================
-# MAGIC Total objects: 9
+# MAGIC -- GOLD SCHEMA - CREATE TABLE/VIEW STATEMENTS
+# MAGIC -- ================================================================================
+# MAGIC -- Total objects: 9
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- GOLD_CANDIDATE_MATCHING
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- GOLD_CANDIDATE_MATCHING
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.gold.gold_candidate_matching (
 # MAGIC   job_id STRING COLLATE UTF8_BINARY,
@@ -1273,9 +1296,9 @@ for table in sorted(gold_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- GOLD_DATA_QUALITY_SUMMARY
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- GOLD_DATA_QUALITY_SUMMARY
+# MAGIC -- ================================================================================
 # MAGIC
 # MAGIC CREATE TABLE recruitment.gold.gold_data_quality_summary (
 # MAGIC   table_name STRING COLLATE UTF8_BINARY NOT NULL COMMENT 'Silver table being checked',
@@ -1305,11 +1328,11 @@ for table in sorted(gold_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- VW_CANDIDATE_MATCHING
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- VW_CANDIDATE_MATCHING
+# MAGIC -- ================================================================================
 # MAGIC
-# MAGIC CREATE VIEW gold.vw_candidate_matching (
+# MAGIC CREATE VIEW recruitment.gold.vw_candidate_matching (
 # MAGIC   job_id,
 # MAGIC   candidate_id,
 # MAGIC   candidate_name,
@@ -1342,11 +1365,11 @@ for table in sorted(gold_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- VW_CANDIDATE_PIPELINE
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- VW_CANDIDATE_PIPELINE
+# MAGIC -- ================================================================================
 # MAGIC
-# MAGIC CREATE VIEW gold.vw_candidate_pipeline (
+# MAGIC CREATE VIEW recruitment.gold.vw_candidate_pipeline (
 # MAGIC   submission_id COMMENT 'Unique submission identifier',
 # MAGIC   company_name COMMENT 'Company name',
 # MAGIC   job_title COMMENT 'Job title',
@@ -1381,11 +1404,11 @@ for table in sorted(gold_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- VW_CLIENT_PIPELINE
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- VW_CLIENT_PIPELINE
+# MAGIC -- ================================================================================
 # MAGIC
-# MAGIC CREATE VIEW gold.vw_client_pipeline (
+# MAGIC CREATE VIEW recruitment.gold.vw_client_pipeline (
 # MAGIC   company_id COMMENT 'Stable unique company identifier',
 # MAGIC   company_name COMMENT 'Company name',
 # MAGIC   industry COMMENT 'Industry sector',
@@ -1422,11 +1445,11 @@ for table in sorted(gold_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- VW_MANAGEMENT_DASHBOARD
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- VW_MANAGEMENT_DASHBOARD
+# MAGIC -- ================================================================================
 # MAGIC
-# MAGIC CREATE VIEW gold.vw_management_dashboard (
+# MAGIC CREATE VIEW recruitment.gold.vw_management_dashboard (
 # MAGIC   active_clients,
 # MAGIC   open_jobs,
 # MAGIC   active_candidates,
@@ -1475,11 +1498,11 @@ for table in sorted(gold_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- VW_OPEN_JOBS
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- VW_OPEN_JOBS
+# MAGIC -- ================================================================================
 # MAGIC
-# MAGIC CREATE VIEW gold.vw_open_jobs (
+# MAGIC CREATE VIEW recruitment.gold.vw_open_jobs (
 # MAGIC   job_id COMMENT 'Unique job identifier',
 # MAGIC   company_name COMMENT 'Company name',
 # MAGIC   job_title COMMENT 'Job title',
@@ -1518,11 +1541,11 @@ for table in sorted(gold_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- VW_RECRUITMENT_FUNNEL
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- VW_RECRUITMENT_FUNNEL
+# MAGIC -- ================================================================================
 # MAGIC
-# MAGIC CREATE VIEW gold.vw_recruitment_funnel (
+# MAGIC CREATE VIEW recruitment.gold.vw_recruitment_funnel (
 # MAGIC   sourced,
 # MAGIC   submitted,
 # MAGIC   interviewed,
@@ -1545,11 +1568,11 @@ for table in sorted(gold_tables):
 # MAGIC ;
 # MAGIC
 # MAGIC
-# MAGIC ================================================================================
-# MAGIC -- VW_REVENUE
-# MAGIC ================================================================================
+# MAGIC -- ================================================================================
+# MAGIC -- -- VW_REVENUE
+# MAGIC -- ================================================================================
 # MAGIC
-# MAGIC CREATE VIEW gold.vw_revenue (
+# MAGIC CREATE VIEW recruitment.gold.vw_revenue (
 # MAGIC   placement_id COMMENT 'Unique placement identifier',
 # MAGIC   company_name COMMENT 'Company name',
 # MAGIC   candidate_name COMMENT 'Candidate full name',
@@ -1601,3 +1624,6 @@ for table in sorted(gold_tables):
 # MAGIC
 # MAGIC ;
 # MAGIC
+
+# COMMAND ----------
+
