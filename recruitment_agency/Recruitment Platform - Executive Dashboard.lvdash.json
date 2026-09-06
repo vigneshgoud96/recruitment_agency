@@ -1,0 +1,3180 @@
+{
+  "datasets": [
+    {
+      "name": "revenue_by_company",
+      "displayName": "Revenue by Company",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT \n  p.company_id,\n  c.company_name,\n  p.recruitment_fee_amount,\n  YEAR(p.joining_date) AS year\nFROM recruitment.silver.fact_placement p LEFT JOIN recruitment.silver.dim_company c ON p.company_id = c.company_id\n",
+        "dimensions": [
+          {
+            "name": "company_id",
+            "expr": "company_id"
+          },
+          {
+            "name": "company_name",
+            "expr": "company_name"
+          },
+          {
+            "name": "year",
+            "expr": "year"
+          }
+        ],
+        "measures": [
+          {
+            "name": "total_revenue",
+            "expr": "SUM(recruitment_fee_amount)",
+            "format": {
+              "type": "currency",
+              "currencyCode": "USD",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "placement_count",
+            "expr": "COUNT(*)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "jobs_metrics",
+      "displayName": "Jobs Metrics",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT \n  job_id,\n  job_title,\n  company_id,\n  job_status,\n  job_priority,\n  job_location,\n  job_open_date,\n  DATEDIFF(CURRENT_DATE(), job_open_date) AS days_open,\n  YEAR(job_open_date) AS job_year,\n  MONTH(job_open_date) AS job_month\nFROM recruitment.silver.dim_job\n",
+        "dimensions": [
+          {
+            "name": "job_id",
+            "expr": "job_id"
+          },
+          {
+            "name": "job_title",
+            "expr": "job_title"
+          },
+          {
+            "name": "company_id",
+            "expr": "company_id"
+          },
+          {
+            "name": "job_status",
+            "expr": "job_status"
+          },
+          {
+            "name": "job_priority",
+            "expr": "job_priority"
+          },
+          {
+            "name": "job_location",
+            "expr": "job_location"
+          },
+          {
+            "name": "job_open_date",
+            "expr": "job_open_date"
+          },
+          {
+            "name": "job_year",
+            "expr": "job_year"
+          },
+          {
+            "name": "job_month",
+            "expr": "job_month"
+          },
+          {
+            "name": "days_open",
+            "expr": "days_open"
+          }
+        ],
+        "measures": [
+          {
+            "name": "total_jobs",
+            "expr": "COUNT(job_id)"
+          },
+          {
+            "name": "open_jobs",
+            "expr": "COUNT(CASE WHEN job_status = 'Open' THEN job_id END)"
+          },
+          {
+            "name": "avg_days_open",
+            "expr": "AVG(days_open)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "recruitment_funnel",
+      "displayName": "Recruitment Funnel",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT \n  'Submissions' AS stage,\n  1 AS stage_order,\n  COUNT(DISTINCT submission_id) AS count\nFROM recruitment.silver.fact_submission\nUNION ALL\nSELECT \n  'Interviews' AS stage,\n  2 AS stage_order,\n  COUNT(DISTINCT interview_id) AS count\nFROM recruitment.silver.fact_interview\nUNION ALL\nSELECT \n  'Offers' AS stage,\n  3 AS stage_order,\n  COUNT(DISTINCT offer_id) AS count\nFROM recruitment.silver.fact_offer\nUNION ALL\nSELECT \n  'Placements' AS stage,\n  4 AS stage_order,\n  COUNT(DISTINCT placement_id) AS count\nFROM recruitment.silver.fact_placement\n",
+        "dimensions": [
+          {
+            "name": "stage",
+            "expr": "stage"
+          },
+          {
+            "name": "stage_order",
+            "expr": "stage_order"
+          }
+        ],
+        "measures": [
+          {
+            "name": "stage_count",
+            "expr": "SUM(count)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "placements_metrics",
+      "displayName": "Placements Metrics",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT \n  p.placement_id,\n  p.job_id,\n  p.candidate_id,\n  p.company_id,\n  p.joining_date,\n  p.annual_ctc,\n  p.recruitment_fee_amount,\n  p.recruitment_fee_percentage,\n  j.job_open_date,\n  j.job_title,\n  j.job_priority,\n  c.company_name,\n  DATEDIFF(p.joining_date, j.job_open_date) AS time_to_fill_days,\n  YEAR(p.joining_date) AS placement_year,\n  MONTH(p.joining_date) AS placement_month,\n  DATE_FORMAT(p.joining_date, 'yyyy-MM') AS placement_year_month,\n  QUARTER(p.joining_date) AS placement_quarter\nFROM recruitment.silver.fact_placement p LEFT JOIN recruitment.silver.dim_job j ON p.job_id = j.job_id LEFT JOIN recruitment.silver.dim_company c ON p.company_id = c.company_id\n",
+        "dimensions": [
+          {
+            "name": "placement_id",
+            "expr": "placement_id"
+          },
+          {
+            "name": "job_id",
+            "expr": "job_id"
+          },
+          {
+            "name": "candidate_id",
+            "expr": "candidate_id"
+          },
+          {
+            "name": "company_id",
+            "expr": "company_id"
+          },
+          {
+            "name": "company_name",
+            "expr": "company_name"
+          },
+          {
+            "name": "joining_date",
+            "expr": "joining_date"
+          },
+          {
+            "name": "job_title",
+            "expr": "job_title"
+          },
+          {
+            "name": "job_priority",
+            "expr": "job_priority"
+          },
+          {
+            "name": "placement_year",
+            "expr": "placement_year"
+          },
+          {
+            "name": "placement_month",
+            "expr": "placement_month"
+          },
+          {
+            "name": "placement_year_month",
+            "expr": "placement_year_month"
+          },
+          {
+            "name": "placement_quarter",
+            "expr": "placement_quarter"
+          },
+          {
+            "name": "time_to_fill_days",
+            "expr": "time_to_fill_days"
+          }
+        ],
+        "measures": [
+          {
+            "name": "total_placements",
+            "expr": "COUNT(placement_id)"
+          },
+          {
+            "name": "ytd_placements",
+            "expr": "COUNT(CASE WHEN placement_year = YEAR(CURRENT_DATE()) THEN placement_id END)"
+          },
+          {
+            "name": "total_revenue",
+            "expr": "SUM(recruitment_fee_amount)",
+            "format": {
+              "type": "currency",
+              "currencyCode": "USD",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "ytd_revenue",
+            "expr": "SUM(CASE WHEN placement_year = YEAR(CURRENT_DATE()) THEN recruitment_fee_amount END)",
+            "format": {
+              "type": "currency",
+              "currencyCode": "USD",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "avg_time_to_fill",
+            "expr": "AVG(time_to_fill_days)"
+          },
+          {
+            "name": "avg_placement_ctc",
+            "expr": "AVG(annual_ctc)",
+            "format": {
+              "type": "currency",
+              "currencyCode": "USD",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "avg_fee_percentage",
+            "expr": "AVG(recruitment_fee_percentage)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "candidates_metrics",
+      "displayName": "Candidates Metrics",
+      "config": {
+        "version": "1.1",
+        "source": "recruitment.silver.dim_candidate",
+        "dimensions": [
+          {
+            "name": "candidate_id",
+            "expr": "candidate_id"
+          },
+          {
+            "name": "candidate_name",
+            "expr": "candidate_name"
+          },
+          {
+            "name": "candidate_status",
+            "expr": "candidate_status"
+          },
+          {
+            "name": "candidate_source",
+            "expr": "candidate_source"
+          },
+          {
+            "name": "current_location",
+            "expr": "current_location"
+          },
+          {
+            "name": "total_experience_years",
+            "expr": "total_experience_years"
+          },
+          {
+            "name": "relevant_experience_years",
+            "expr": "relevant_experience_years"
+          }
+        ],
+        "measures": [
+          {
+            "name": "total_candidates",
+            "expr": "COUNT(candidate_id)"
+          },
+          {
+            "name": "active_candidates",
+            "expr": "COUNT(CASE WHEN candidate_status = 'Active' THEN candidate_id END)"
+          },
+          {
+            "name": "avg_experience",
+            "expr": "AVG(total_experience_years)"
+          },
+          {
+            "name": "avg_current_ctc",
+            "expr": "AVG(current_ctc)",
+            "format": {
+              "type": "currency",
+              "currencyCode": "USD",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "avg_expected_ctc",
+            "expr": "AVG(expected_ctc)",
+            "format": {
+              "type": "currency",
+              "currencyCode": "USD",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "placement_rate",
+      "displayName": "Placement Rate",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT \n  (SELECT COUNT(*) FROM recruitment.silver.fact_submission) AS total_submissions,\n  (SELECT COUNT(*) FROM recruitment.silver.fact_placement) AS total_placements\n",
+        "measures": [
+          {
+            "name": "submissions",
+            "expr": "SUM(total_submissions)"
+          },
+          {
+            "name": "placements",
+            "expr": "SUM(total_placements)"
+          },
+          {
+            "name": "placement_rate",
+            "expr": "SUM(total_placements) * 100.0 / NULLIF(SUM(total_submissions), 0)",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "offer_metrics",
+      "displayName": "Offer Metrics",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT \n  o.offer_id,\n  o.candidate_id,\n  o.job_id,\n  o.offer_date,\n  o.offer_status,\n  o.offered_ctc,\n  YEAR(o.offer_date) AS offer_year,\n  MONTH(o.offer_date) AS offer_month\nFROM recruitment.silver.fact_offer o\n",
+        "dimensions": [
+          {
+            "name": "offer_id",
+            "expr": "offer_id"
+          },
+          {
+            "name": "candidate_id",
+            "expr": "candidate_id"
+          },
+          {
+            "name": "job_id",
+            "expr": "job_id"
+          },
+          {
+            "name": "offer_date",
+            "expr": "offer_date"
+          },
+          {
+            "name": "offer_status",
+            "expr": "offer_status"
+          },
+          {
+            "name": "offer_year",
+            "expr": "offer_year"
+          },
+          {
+            "name": "offer_month",
+            "expr": "offer_month"
+          }
+        ],
+        "measures": [
+          {
+            "name": "total_offers",
+            "expr": "COUNT(offer_id)"
+          },
+          {
+            "name": "accepted_offers",
+            "expr": "COUNT(CASE WHEN offer_status = 'Accepted' THEN offer_id END)"
+          },
+          {
+            "name": "rejected_offers",
+            "expr": "COUNT(CASE WHEN offer_status = 'Rejected' THEN offer_id END)"
+          },
+          {
+            "name": "avg_offered_ctc",
+            "expr": "AVG(offered_ctc)",
+            "format": {
+              "type": "currency",
+              "currencyCode": "USD",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "pipeline_metrics",
+      "displayName": "Pipeline Metrics",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT \n  s.submission_id,\n  s.job_id,\n  s.candidate_id,\n  s.submission_date,\n  j.job_title,\n  j.company_id,\n  c.company_name,\n  YEAR(s.submission_date) AS submission_year,\n  MONTH(s.submission_date) AS submission_month,\n  DATE_FORMAT(s.submission_date, 'yyyy-MM') AS submission_year_month\nFROM recruitment.silver.fact_submission s LEFT JOIN recruitment.silver.dim_job j ON s.job_id = j.job_id LEFT JOIN recruitment.silver.dim_company c ON j.company_id = c.company_id\n",
+        "dimensions": [
+          {
+            "name": "submission_id",
+            "expr": "submission_id"
+          },
+          {
+            "name": "job_id",
+            "expr": "job_id"
+          },
+          {
+            "name": "candidate_id",
+            "expr": "candidate_id"
+          },
+          {
+            "name": "submission_date",
+            "expr": "submission_date"
+          },
+          {
+            "name": "job_title",
+            "expr": "job_title"
+          },
+          {
+            "name": "company_id",
+            "expr": "company_id"
+          },
+          {
+            "name": "company_name",
+            "expr": "company_name"
+          },
+          {
+            "name": "submission_year",
+            "expr": "submission_year"
+          },
+          {
+            "name": "submission_month",
+            "expr": "submission_month"
+          },
+          {
+            "name": "submission_year_month",
+            "expr": "submission_year_month"
+          }
+        ],
+        "measures": [
+          {
+            "name": "total_submissions",
+            "expr": "COUNT(submission_id)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "conversion_rates",
+      "displayName": "Conversion Rates",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT \n  (SELECT COUNT(*) FROM recruitment.silver.fact_submission) AS submissions,\n  (SELECT COUNT(*) FROM recruitment.silver.fact_interview) AS interviews,\n  (SELECT COUNT(*) FROM recruitment.silver.fact_offer) AS offers,\n  (SELECT COUNT(*) FROM recruitment.silver.fact_placement) AS placements\n",
+        "measures": [
+          {
+            "name": "submission_count",
+            "expr": "SUM(submissions)"
+          },
+          {
+            "name": "interview_count",
+            "expr": "SUM(interviews)"
+          },
+          {
+            "name": "offer_count",
+            "expr": "SUM(offers)"
+          },
+          {
+            "name": "placement_count",
+            "expr": "SUM(placements)"
+          },
+          {
+            "name": "submission_to_interview",
+            "expr": "SUM(interviews) * 100.0 / NULLIF(SUM(submissions), 0)",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "interview_to_offer",
+            "expr": "SUM(offers) * 100.0 / NULLIF(SUM(interviews), 0)",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "offer_to_placement",
+            "expr": "SUM(placements) * 100.0 / NULLIF(SUM(offers), 0)",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "interview_metrics",
+      "displayName": "Interview Metrics",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT \n  i.interview_id,\n  i.submission_id,\n  i.scheduled_ts,\n  i.completed_ts,\n  i.interview_round,\n  i.interview_type,\n  i.interview_status,\n  i.result,\n  i.job_id,\n  i.candidate_id,\n  YEAR(COALESCE(i.completed_ts, i.scheduled_ts)) AS interview_year,\n  MONTH(COALESCE(i.completed_ts, i.scheduled_ts)) AS interview_month\nFROM recruitment.silver.fact_interview i\n",
+        "dimensions": [
+          {
+            "name": "interview_id",
+            "expr": "interview_id"
+          },
+          {
+            "name": "submission_id",
+            "expr": "submission_id"
+          },
+          {
+            "name": "scheduled_ts",
+            "expr": "scheduled_ts"
+          },
+          {
+            "name": "completed_ts",
+            "expr": "completed_ts"
+          },
+          {
+            "name": "interview_round",
+            "expr": "interview_round"
+          },
+          {
+            "name": "interview_type",
+            "expr": "interview_type"
+          },
+          {
+            "name": "interview_status",
+            "expr": "interview_status"
+          },
+          {
+            "name": "result",
+            "expr": "result"
+          },
+          {
+            "name": "job_id",
+            "expr": "job_id"
+          },
+          {
+            "name": "candidate_id",
+            "expr": "candidate_id"
+          },
+          {
+            "name": "interview_year",
+            "expr": "interview_year"
+          },
+          {
+            "name": "interview_month",
+            "expr": "interview_month"
+          }
+        ],
+        "measures": [
+          {
+            "name": "total_interviews",
+            "expr": "COUNT(interview_id)"
+          },
+          {
+            "name": "completed_interviews",
+            "expr": "COUNT(CASE WHEN interview_status = 'COMPLETED' THEN interview_id END)"
+          },
+          {
+            "name": "passed_interviews",
+            "expr": "COUNT(CASE WHEN result = 'PASS' THEN interview_id END)"
+          },
+          {
+            "name": "failed_interviews",
+            "expr": "COUNT(CASE WHEN result = 'FAIL' THEN interview_id END)"
+          }
+        ]
+      }
+    }
+  ],
+  "pages": [
+    {
+      "name": "0c079e85",
+      "displayName": "Executive Summary",
+      "layout": [
+        {
+          "widget": {
+            "name": "total_jobs",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "jobs_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(total_jobs)",
+                      "expression": "MEASURE(`total_jobs`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Total Jobs"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(total_jobs)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "open_jobs",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "jobs_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(open_jobs)",
+                      "expression": "MEASURE(`open_jobs`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Open Jobs"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(open_jobs)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 0,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "total_candidates",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "candidates_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(total_candidates)",
+                      "expression": "MEASURE(`total_candidates`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Total Candidates"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(total_candidates)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 0,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "active_candidates",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "candidates_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(active_candidates)",
+                      "expression": "MEASURE(`active_candidates`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Active Candidates"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(active_candidates)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 0,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "ytd_placements",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "placements_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(ytd_placements)",
+                      "expression": "MEASURE(`ytd_placements`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "YTD Placements"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(ytd_placements)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 0,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "ytd_revenue",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "placements_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(ytd_revenue)",
+                      "expression": "MEASURE(`ytd_revenue`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "YTD Revenue"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(ytd_revenue)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 10,
+            "y": 0,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "funnel_chart",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "recruitment_funnel",
+                  "fields": [
+                    {
+                      "name": "stage",
+                      "expression": "`stage`"
+                    },
+                    {
+                      "name": "measure(stage_count)",
+                      "expression": "MEASURE(`stage_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Recruitment Funnel"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "stage",
+                  "displayName": "stage",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(stage_count)",
+                  "displayName": "stage_count",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "stage",
+                  "displayName": "stage",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "revenue_by_company",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "revenue_by_company",
+                  "fields": [
+                    {
+                      "name": "company_name",
+                      "expression": "`company_name`"
+                    },
+                    {
+                      "name": "measure(total_revenue)",
+                      "expression": "MEASURE(`total_revenue`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Revenue by Company (Top 10)"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "company_name",
+                  "displayName": "company_name",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(total_revenue)",
+                  "displayName": "total_revenue",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "company_name",
+                  "displayName": "company_name",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 12,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "placements_trend",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "placements_metrics",
+                  "fields": [
+                    {
+                      "name": "monthly(joining_date)",
+                      "expression": "DATE_TRUNC(\"MONTH\", `joining_date`)"
+                    },
+                    {
+                      "name": "measure(total_placements)",
+                      "expression": "MEASURE(`total_placements`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Placements Trend (Monthly)"
+              },
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "monthly(joining_date)",
+                  "displayName": "Month",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(total_placements)",
+                  "displayName": "total_placements",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 3,
+            "width": 6,
+            "height": 5
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "pipeline_metrics",
+      "displayName": "Pipeline Metrics",
+      "layout": [
+        {
+          "widget": {
+            "name": "total_submissions",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "pipeline_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(total_submissions)",
+                      "expression": "MEASURE(`total_submissions`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Total Submissions"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(total_submissions)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "total_interviews",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "interview_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(total_interviews)",
+                      "expression": "MEASURE(`total_interviews`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Total Interviews"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(total_interviews)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "total_offers",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "offer_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(total_offers)",
+                      "expression": "MEASURE(`total_offers`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Total Offers"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(total_offers)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "total_placements",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "placements_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(total_placements)",
+                      "expression": "MEASURE(`total_placements`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Total Placements"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(total_placements)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "sub_to_int",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "conversion_rates",
+                  "fields": [
+                    {
+                      "name": "measure(submission_to_interview)",
+                      "expression": "MEASURE(`submission_to_interview`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Submission → Interview Rate"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(submission_to_interview)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "int_to_off",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "conversion_rates",
+                  "fields": [
+                    {
+                      "name": "measure(interview_to_offer)",
+                      "expression": "MEASURE(`interview_to_offer`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Interview → Offer Rate"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(interview_to_offer)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 3,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "off_to_plc",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "conversion_rates",
+                  "fields": [
+                    {
+                      "name": "measure(offer_to_placement)",
+                      "expression": "MEASURE(`offer_to_placement`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Offer → Placement Rate"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(offer_to_placement)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 3,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "submissions_trend",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "pipeline_metrics",
+                  "fields": [
+                    {
+                      "name": "monthly(submission_date)",
+                      "expression": "DATE_TRUNC(\"MONTH\", `submission_date`)"
+                    },
+                    {
+                      "name": "measure(total_submissions)",
+                      "expression": "MEASURE(`total_submissions`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Submissions Trend (Monthly)"
+              },
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "monthly(submission_date)",
+                  "displayName": "Month",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(total_submissions)",
+                  "displayName": "total_submissions",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "interviews_by_round",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "interview_metrics",
+                  "fields": [
+                    {
+                      "name": "interview_round",
+                      "expression": "`interview_round`"
+                    },
+                    {
+                      "name": "measure(total_interviews)",
+                      "expression": "MEASURE(`total_interviews`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Interviews by Round"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "interview_round",
+                  "displayName": "interview_round",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(total_interviews)",
+                  "displayName": "total_interviews",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "interview_round",
+                  "displayName": "interview_round",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 6,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "offer_status",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "offer_metrics",
+                  "fields": [
+                    {
+                      "name": "offer_status",
+                      "expression": "`offer_status`"
+                    },
+                    {
+                      "name": "measure(total_offers)",
+                      "expression": "MEASURE(`total_offers`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Offer Status Breakdown"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "offer_status",
+                  "displayName": "offer_status",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(total_offers)",
+                  "displayName": "total_offers",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "offer_status",
+                  "displayName": "offer_status",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 11,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "interview_results",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "interview_metrics",
+                  "fields": [
+                    {
+                      "name": "result",
+                      "expression": "`result`"
+                    },
+                    {
+                      "name": "measure(total_interviews)",
+                      "expression": "MEASURE(`total_interviews`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Interview Results"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "result",
+                  "displayName": "result",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(total_interviews)",
+                  "displayName": "total_interviews",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "result",
+                  "displayName": "result",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 11,
+            "width": 6,
+            "height": 5
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "financial",
+      "displayName": "Financial Dashboard",
+      "layout": [
+        {
+          "widget": {
+            "name": "total_revenue",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "placements_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(total_revenue)",
+                      "expression": "MEASURE(`total_revenue`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Total Revenue"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(total_revenue)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "ytd_revenue",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "placements_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(ytd_revenue)",
+                      "expression": "MEASURE(`ytd_revenue`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "YTD Revenue"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(ytd_revenue)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "avg_placement_ctc",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "placements_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(avg_placement_ctc)",
+                      "expression": "MEASURE(`avg_placement_ctc`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Avg Placement CTC"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(avg_placement_ctc)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "avg_fee_pct",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "placements_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(avg_fee_percentage)",
+                      "expression": "MEASURE(`avg_fee_percentage`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Avg Fee %"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(avg_fee_percentage)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "revenue_trend",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "placements_metrics",
+                  "fields": [
+                    {
+                      "name": "monthly(joining_date)",
+                      "expression": "DATE_TRUNC(\"MONTH\", `joining_date`)"
+                    },
+                    {
+                      "name": "measure(total_revenue)",
+                      "expression": "MEASURE(`total_revenue`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Revenue Trend (Monthly)"
+              },
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "monthly(joining_date)",
+                  "displayName": "Month",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(total_revenue)",
+                  "displayName": "total_revenue",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "revenue_by_quarter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "placements_metrics",
+                  "fields": [
+                    {
+                      "name": "placement_quarter",
+                      "expression": "`placement_quarter`"
+                    },
+                    {
+                      "name": "measure(total_revenue)",
+                      "expression": "MEASURE(`total_revenue`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Revenue by Quarter"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "placement_quarter",
+                  "displayName": "placement_quarter",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(total_revenue)",
+                  "displayName": "total_revenue",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "placement_quarter",
+                  "displayName": "placement_quarter",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 3,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "placements_by_year",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "placements_metrics",
+                  "fields": [
+                    {
+                      "name": "placement_year",
+                      "expression": "`placement_year`"
+                    },
+                    {
+                      "name": "measure(total_placements)",
+                      "expression": "MEASURE(`total_placements`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Placements by Year"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "placement_year",
+                  "displayName": "placement_year",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(total_placements)",
+                  "displayName": "total_placements",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "placement_year",
+                  "displayName": "placement_year",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "revenue_by_priority",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "placements_metrics",
+                  "fields": [
+                    {
+                      "name": "job_priority",
+                      "expression": "`job_priority`"
+                    },
+                    {
+                      "name": "measure(total_revenue)",
+                      "expression": "MEASURE(`total_revenue`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Revenue by Job Priority"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "job_priority",
+                  "displayName": "job_priority",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(total_revenue)",
+                  "displayName": "total_revenue",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "job_priority",
+                  "displayName": "job_priority",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 8,
+            "width": 6,
+            "height": 5
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "operational",
+      "displayName": "Operational Metrics",
+      "layout": [
+        {
+          "widget": {
+            "name": "avg_time_to_fill",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "placements_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(avg_time_to_fill)",
+                      "expression": "MEASURE(`avg_time_to_fill`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Avg Time to Fill (Days)"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(avg_time_to_fill)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "total_jobs",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "jobs_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(total_jobs)",
+                      "expression": "MEASURE(`total_jobs`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Total Jobs"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(total_jobs)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "open_jobs",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "jobs_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(open_jobs)",
+                      "expression": "MEASURE(`open_jobs`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Open Jobs"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(open_jobs)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "avg_days_open",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "jobs_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(avg_days_open)",
+                      "expression": "MEASURE(`avg_days_open`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Avg Days Open"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(avg_days_open)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "jobs_by_status",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "jobs_metrics",
+                  "fields": [
+                    {
+                      "name": "job_status",
+                      "expression": "`job_status`"
+                    },
+                    {
+                      "name": "count(job_id)",
+                      "expression": "COUNT(`job_id`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Jobs by Status"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "job_status",
+                  "displayName": "job_status",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "count(job_id)",
+                  "displayName": "job_id",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "job_status",
+                  "displayName": "job_status",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "jobs_by_location",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "jobs_metrics",
+                  "fields": [
+                    {
+                      "name": "job_location",
+                      "expression": "`job_location`"
+                    },
+                    {
+                      "name": "count(job_id)",
+                      "expression": "COUNT(`job_id`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Jobs by Location"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "job_location",
+                  "displayName": "job_location",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "count(job_id)",
+                  "displayName": "job_id",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "job_location",
+                  "displayName": "job_location",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 3,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "candidates_by_source",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "candidates_metrics",
+                  "fields": [
+                    {
+                      "name": "candidate_source",
+                      "expression": "`candidate_source`"
+                    },
+                    {
+                      "name": "measure(total_candidates)",
+                      "expression": "MEASURE(`total_candidates`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Candidates by Source"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "candidate_source",
+                  "displayName": "candidate_source",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(total_candidates)",
+                  "displayName": "total_candidates",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "candidate_source",
+                  "displayName": "candidate_source",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "candidate_status",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "candidates_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(total_candidates)",
+                      "expression": "MEASURE(`total_candidates`)"
+                    },
+                    {
+                      "name": "candidate_status",
+                      "expression": "`candidate_status`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Candidate Status Distribution"
+              },
+              "version": 3,
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "measure(total_candidates)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "total_candidates"
+                },
+                "color": {
+                  "fieldName": "candidate_status",
+                  "displayName": "candidate_status",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 8,
+            "width": 6,
+            "height": 5
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "matching",
+      "displayName": "Candidate Matching",
+      "layout": [
+        {
+          "widget": {
+            "name": "total_candidates",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "candidates_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(total_candidates)",
+                      "expression": "MEASURE(`total_candidates`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Total Candidates"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(total_candidates)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "avg_experience",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "candidates_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(avg_experience)",
+                      "expression": "MEASURE(`avg_experience`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Avg Experience (Years)"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(avg_experience)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 0,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "avg_current_ctc",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "candidates_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(avg_current_ctc)",
+                      "expression": "MEASURE(`avg_current_ctc`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Avg Current CTC"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(avg_current_ctc)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 0,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "candidates_by_location",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "candidates_metrics",
+                  "fields": [
+                    {
+                      "name": "current_location",
+                      "expression": "`current_location`"
+                    },
+                    {
+                      "name": "measure(total_candidates)",
+                      "expression": "MEASURE(`total_candidates`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Candidates by Location"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "current_location",
+                  "displayName": "current_location",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(total_candidates)",
+                  "displayName": "total_candidates",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "current_location",
+                  "displayName": "current_location",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "experience_distribution",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "candidates_metrics",
+                  "fields": [
+                    {
+                      "name": "total_experience_years",
+                      "expression": "`total_experience_years`"
+                    },
+                    {
+                      "name": "count(candidate_id)",
+                      "expression": "COUNT(`candidate_id`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Experience Distribution"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "total_experience_years",
+                  "displayName": "total_experience_years",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "count(candidate_id)",
+                  "displayName": "candidate_id",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "total_experience_years",
+                  "displayName": "total_experience_years",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 3,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "ctc_comparison",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "candidates_metrics",
+                  "fields": [
+                    {
+                      "name": "candidate_status",
+                      "expression": "`candidate_status`"
+                    },
+                    {
+                      "name": "measure(avg_current_ctc)",
+                      "expression": "MEASURE(`avg_current_ctc`)"
+                    },
+                    {
+                      "name": "measure(avg_expected_ctc)",
+                      "expression": "MEASURE(`avg_expected_ctc`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Current vs Expected CTC"
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "candidate_status"
+                  },
+                  {
+                    "fieldName": "measure(avg_current_ctc)"
+                  },
+                  {
+                    "fieldName": "measure(avg_expected_ctc)"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 12,
+            "height": 5
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "data_quality",
+      "displayName": "Data Quality",
+      "layout": [
+        {
+          "widget": {
+            "name": "total_submissions",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "pipeline_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(total_submissions)",
+                      "expression": "MEASURE(`total_submissions`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Total Submissions"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(total_submissions)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "total_interviews",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "interview_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(total_interviews)",
+                      "expression": "MEASURE(`total_interviews`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Total Interviews"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(total_interviews)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "total_offers",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "offer_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(total_offers)",
+                      "expression": "MEASURE(`total_offers`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Total Offers"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(total_offers)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "total_placements",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "placements_metrics",
+                  "fields": [
+                    {
+                      "name": "measure(total_placements)",
+                      "expression": "MEASURE(`total_placements`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Total Placements"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(total_placements)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "placement_rate",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "placement_rate",
+                  "fields": [
+                    {
+                      "name": "measure(placement_rate)",
+                      "expression": "MEASURE(`placement_rate`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Overall Placement Rate"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(placement_rate)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "sub_to_int_rate",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "conversion_rates",
+                  "fields": [
+                    {
+                      "name": "measure(submission_to_interview)",
+                      "expression": "MEASURE(`submission_to_interview`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Submission → Interview Rate"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(submission_to_interview)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 3,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "int_to_off_rate",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "conversion_rates",
+                  "fields": [
+                    {
+                      "name": "measure(interview_to_offer)",
+                      "expression": "MEASURE(`interview_to_offer`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Interview → Offer Rate"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(interview_to_offer)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 3,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "data_summary",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "conversion_rates",
+                  "fields": [
+                    {
+                      "name": "measure(submission_count)",
+                      "expression": "MEASURE(`submission_count`)"
+                    },
+                    {
+                      "name": "measure(interview_count)",
+                      "expression": "MEASURE(`interview_count`)"
+                    },
+                    {
+                      "name": "measure(offer_count)",
+                      "expression": "MEASURE(`offer_count`)"
+                    },
+                    {
+                      "name": "measure(placement_count)",
+                      "expression": "MEASURE(`placement_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Data Summary"
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "measure(submission_count)"
+                  },
+                  {
+                    "fieldName": "measure(interview_count)"
+                  },
+                  {
+                    "fieldName": "measure(offer_count)"
+                  },
+                  {
+                    "fieldName": "measure(placement_count)"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 12,
+            "height": 5
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}
