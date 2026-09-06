@@ -36,6 +36,55 @@
 
 # COMMAND ----------
 
+# DBTITLE 1,🗑️ Clear All Tables (Run Before Fresh Pipeline Execution)
+# CLEAR ALL BRONZE, SILVER, AND GOLD TABLES
+# Run this cell to reset the entire pipeline before a fresh execution
+
+print("Clearing all Bronze, Silver, and Gold tables...\n")
+
+# Bronze tables
+bronze_tables = [
+    'bronze_companies', 'bronze_contacts', 'bronze_candidates', 'bronze_jobs',
+    'bronze_submissions', 'bronze_interviews', 'bronze_offers', 'bronze_placements',
+    'bronze_agreements', 'bronze_invoices', 'bronze_payments'
+]
+
+print("Clearing Bronze layer...")
+for table in bronze_tables:
+    spark.sql(f"TRUNCATE TABLE recruitment.bronze.{table}")
+    print(f"  ✓ Cleared {table}")
+
+# Silver tables
+silver_tables = [
+    'dim_company', 'dim_contact', 'dim_candidate', 'dim_job',
+    'fact_submission', 'fact_interview', 'fact_offer', 'fact_placement',
+    'dim_agreement', 'fact_invoice', 'fact_payment',
+    'control_file_ingestion', 'control_job_run', 'config_business_rules'
+]
+
+print("\nClearing Silver layer...")
+for table in silver_tables:
+    spark.sql(f"TRUNCATE TABLE recruitment.silver.{table}")
+    print(f"  ✓ Cleared {table}")
+
+# Gold tables
+gold_tables = [
+    'gold_data_quality_summary',
+    'gold_candidate_matching'
+]
+
+print("\nClearing Gold layer...")
+for table in gold_tables:
+    spark.sql(f"TRUNCATE TABLE recruitment.gold.{table}")
+    print(f"  ✓ Cleared {table}")
+
+print("\n" + "="*60)
+print("All tables cleared successfully!")
+print("You can now rerun the complete pipeline from Step 1.")
+print("="*60)
+
+# COMMAND ----------
+
 # DBTITLE 1,Configuration & Imports
 import uuid, hashlib, builtins
 from datetime import datetime, timedelta
